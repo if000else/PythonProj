@@ -11,7 +11,7 @@ DATABASE = str(ftp.BASEDIR / "database")
 
 
 ###SEVER
-F_SERVER =  str(ftp.BASEDIR / "database" / "server")
+HomeOfServer =  str(ftp.BASEDIR / "database" / "server")
 
 ###socket
 ADDR = '127.0.0.1'

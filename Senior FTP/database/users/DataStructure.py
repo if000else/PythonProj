@@ -1,3 +1,3 @@
 '''
-{'name': 'admin', 'passwd': '123456', 'role': '1'}
+{'name': 'admin', 'passwd': '123456', 'encode': 'xxxxx'}
 '''

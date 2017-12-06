@@ -1,5 +1,6 @@
 HelpMenu = '''
-rz/sz + files  >>for current client,receive files and send files
+rz + files  >>receive files ,equal to upload
+sz + files  >>receive files ,equal to download
 df  >>show current client disk info
 ls  >>show current dirs and files
 cd  >>enter dirs

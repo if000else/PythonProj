@@ -1,23 +1,60 @@
-import socketserver,os,sys
+import socketserver,os,sys,json
 from pathlib import Path
 BASEDIR = Path(__file__).parent.parent
 sys.path.append(str(BASEDIR))
 from conf import settings
 from modules import log
 
+
+
 class MyTCPHandler(socketserver.BaseRequestHandler):
+    LoginUsers = []  ### logined users
+    PATH=settings.HomeOfServer### home dir
     def handle(self):
+        print("client [%s] in.." % self.client_address[0])
+        while True:
+            comm = self.request.recv(1024)
+            if comm.decode() == 'login':
+                self.request.send(b'Please input username:')
+                user=self.request.recv(1024).decode()
+                if user =='quit':
+                    self.request.send(b'quit')
+                self.request.send(b'Please input password:')
+                psd=self.request.recv(1024).decode()
+                with open('%s/date.db'%settings.USER_DATA,'r') as f:
+                    date = json.load(f)
+                    if date.get(user):
+                        if psd == date[user]:
+                            print("client [%s] has login..."%self.client_address[0])
+                            self.request.send(b'Welcome!')
+                            self.LoginUsers.append(user)
+                            self.operate()
+                        else:
+                            self.request.send(b'Incorrect user or password!')
+                    else:
+                        self.request.send(b'No such user!')
+
+    def operate(self):
         try:
             while True:
-                self.data=self.request.recv(1024).decode()
-                if self.data:
-                    print(" wrote:",self.data)
-                    self.request.send((self.data.encode()).upper())
+                # self.request.send(b'welcome!')
+                data=self.request.recv(1024).decode()
+                if data == 'ls':
+                    pass
+                elif data == 'rz':
+                    pass
+                elif data == 'sz':
+                    pass
+                elif data == 'cd':
+                    pass
+                elif data == 'useradd':
+                    pass
+                elif data == 'logout':
+                    pass
                 else:
-                    print("disconnect...",self.request)
-        except Exception as e:
-            print("error:",e)
-
+                    self.request.send(b'')
+        except Exception :
+            print("Exist error!!!")
 
 if __name__ == "__main__":
     server=socketserver.ThreadingTCPServer((settings.PORT,settings.ADDR),MyTCPHandler)

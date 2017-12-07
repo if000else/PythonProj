@@ -1,4 +1,4 @@
-import socketserver,os,sys,json
+import socketserver,os,sys,json,hashlib
 from pathlib import Path
 BASEDIR = Path(__file__).parent.parent
 sys.path.append(str(BASEDIR))
@@ -31,17 +31,61 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     def ls(self):
         if self.User:
+            self.request.send(self.PATH.decode())
+        else:
+            self.request.send(b'Please login first!')
+    def cd(self):
+        if self.User:
+            dirname = '%s/%s'%(self.PATH,self.Command[1])
+            if os.path.isdir(dirname):
+                self.request.send(0) # successful
+                self.PATH=dirname
+            elif self.Command[1] == '..':
+                if self.PATH == settings.HomeOfServer:
+                    self.request.send(b'Take no effect!')
+                else:
+                    basename = os.path.basename(self.PATH)
+                    self.request.send(basename.encode())
+                    self.PATH == os.path.dirname(self.PATH)
+            else:
+                self.request.send(b'Please input a valid dirname!')
+
+        else:
+            self.request.send(b'Please login first!')
+    def rz(self):
+        if self.User:
             pass
         else:
-            self.login()
-    def cd(self):
-        pass
-    def rz(self):
-        pass
+            self.request.send(b'Please login first!')
     def sz(self):
-        pass
+        if self.User:
+            pass
+        else:
+            self.request.send(b'Please login first!')
     def useradd(self):
-        pass
+        '''
+        like: useradd username password
+        encrypt password and save to file
+        :return:
+        '''
+        try:
+            if self.User:
+                user = self.Command[1]
+                psd = self.Command[2]
+                psd = hashlib.md5(psd.encode()).hexdigest()
+                print("passwd md5:",psd)
+                with open('%s'%settings.USER_DATA,'r+') as f:
+                    data = json.load(f)
+                    data[user] = psd
+                    f.seek(0)
+                    f.truncate(0)  # clear content
+                    json.dump(f,data)
+                    print("add user %s successfully!"%user)
+                    self.request.send(b'successfully!')
+            else:
+                self.request.send(b'Please login first!')
+        except Exception as e:
+            self.request.send(str(e).encode())
     def login(self):
         '''
         interact with user while login,if success,set User
@@ -77,26 +121,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 
 
-if comm == 'login':
-    self.request.send(b'Please input username:')
-    user=self.request.recv(1024).decode()
-    if user =='quit':
-        self.request.send(b'quit')
-        break
-    self.request.send(b'Please input password:')
-    psd=self.request.recv(1024).decode()
-    with open('%s/date.db'%settings.USER_DATA,'r') as f:
-        date = json.load(f)
-        if date.get(user):
-            if psd == date[user]:
-                print("client [%s] has login..."%self.client_address[0])
-                self.request.send(1)
-                self.LoginUsers.append(user)
-                self.operate()
-            else:
-                self.request.send(0)
-        else:
-            self.request.send(0)# failed to login
+
 
 # def operate(self):
 #     try:
@@ -125,7 +150,8 @@ if __name__ == "__main__":
     server.serve_forever(poll_interval=0.5)
     server.server_close()
 
-
+#####################################
+    #remain improvement
 
 
 ###send big size files

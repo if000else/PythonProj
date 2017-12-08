@@ -1,7 +1,5 @@
 import os,hashlib,json
-with open("date.db",'w',encoding='utf-8') as f:
-    psd = hashlib.md5(('123456').encode('utf-8')).hexdigest()
-    print(psd)
-    admin = dict(admin=psd)
+with open("users.db",'w',encoding='utf-8') as f:
+    admin = dict(admin='123456',alex='123456')
     json.dump(admin,f)
 # os.makedirs("D:/myProject/SimpleFTP/new")

@@ -61,7 +61,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         """
         import time
         UpName = time.strftime("%Y%m%d%H%M%S:",time.localtime()) + 'upload'
-        self.request.send(b'size of file?')
+        self.request.send(b'rz')  # ready to send file
         FileSize = int(self.request.recv(1024).decode())
         print("recv file size:",FileSize)
         self.request.send(b'Please start')
@@ -77,10 +77,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 m5.update(data)
                 f.write(data)
                 RecvSize += len(data)
-                div = int(100 * RecvSize / FileSize)
-                equil = ''.ljust(div/10,'=')
-                blank = ''.ljust(10-div/10,' ')
-                print("Transfer:[%s%s]%s%%"%(equil,blank,div),end='\r')
             else:
                 print('\rCompletely!')
         md5_recv = self.request.recv(1024).decode() # receive md5 check
@@ -98,6 +94,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         """
         filename = "%s/%s"%(self.PATH,self.Command[1])
         if os.path.isfile(filename):
+            self.request.send(b'sz') # tell client i am ready
             print("user download request.")
             file_size = os.stat(filename).st_size
             self.request.send(str(file_size).encode())
@@ -166,28 +163,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         self.User = None
         self.request.send(b'logout...')
 
-
-# def operate(self):
-#     try:
-#         while True:
-#             # self.request.send(b'welcome!')
-#             data=self.request.recv(1024).decode()
-#             if data == 'ls':
-#                 pass
-#             elif data == 'rz':
-#                 pass
-#             elif data == 'sz':
-#                 pass
-#             elif data == 'cd':
-#                 pass
-#             elif data == 'useradd':
-#                 pass
-#             elif data == 'logout':
-#                 pass
-#             else:
-#                 self.request.send(b'')
-#     except Exception :
-#         print("Exist error!!!")
 
 if __name__ == "__main__":
     server = socketserver.ThreadingTCPServer((settings.PORT, settings.ADDR), MyTCPHandler)
